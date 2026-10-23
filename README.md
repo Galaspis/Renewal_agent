@@ -2,17 +2,18 @@
 
 A family board for everything that renews: insurance policies, licences, subscriptions, domains, warranties. Forward a renewal email to the tool's address and it becomes an item, with a receipt email you can act on. Reminders carry one-tap buttons and keep coming until you answer. The rooster is the brand: it calls for attention.
 
-Live at **https://renewals.gallab.top** behind the gallab Google login. Deployed by pushing to `master` (GitHub Action rebuilds the container on the gallab server).
+Live at **https://karbol.gallab.top** behind the gallab Google login (the previous address redirects there). Deployed by pushing to `master`: the GitHub Action rebuilds the container on the gallab server and installs the Caddy site.
 
 ## Where things are
 
 | What | Where |
 |---|---|
 | Brand kit (logos, icons, colours, fonts, guidelines) | `karbol-brand-kit/` (source of truth); the app uses copies in `public/brand/` and `src/app/fonts/` |
-| How forwarded email gets in, the receipt and its buttons | `docs/inbound-mail.md` |
-| Reminders: ladder, buttons, acknowledgement, Sunday timing | `docs/reminders.md` |
-| Putting it on the server from scratch | `docs/deploy-renewals.md` |
-| Data on the server | `/srv/renewals/data` (SQLite `renewal.db`, `uploads/`, `inbox/`, `outbox/`), owned by uid 1000 |
+| Reminders: ladder, buttons, acknowledgement, daily timing, what the app shows | `docs/reminders.md` |
+| Receipt emails and the one-tap buttons | `src/lib/receipts.ts`, `src/lib/action-links.ts`, page `src/app/a/[token]/route.ts` |
+| Forwarded email intake (Resend webhook) | `src/app/api/inbound/route.ts`, `src/lib/inbound.ts`, `src/lib/ingest-email.ts` |
+| Caddy site (public paths, login) | `deploy/renewals.caddy` |
+| Example environment | `.env.example` |
 
 ## Run it on this PC
 

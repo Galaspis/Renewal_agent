@@ -1,15 +1,17 @@
 {
  "_about": "Facts the drift monitor checks this repo's docs against. 'banned' = old names that must not appear in README/CLAUDE.md/STATUS.md/docs; 'allow' = files exempt; 'ignore' = checks that are intentional here.",
  "repo": "Renewal_agent",
+ "name": "Karbol (כָּרבוֹל)",
  "database": "SQLite (data/ folder)",
  "hosting": "OVH VPS (Docker + Caddy)",
- "domain": "renewals.gallab.top",
- "url": "https://renewals.gallab.top",
+ "domain": "karbol.gallab.top",
+ "url": "https://karbol.gallab.top",
  "services": [
   "Resend",
   "Claude / OpenAI / Gemini (extraction)"
  ],
- "banned": [],
- "name": "Karbol (כָּרבוֹל)",
+ "banned": [
+  "renewals.gallab.top"
+ ],
  "brand": "karbol-brand-kit/ (logos, icons, colours); app copies in public/brand/"
 }

@@ -1,6 +1,6 @@
-# Renewals. Install as /etc/caddy/sites/renewals.caddy, then: sudo systemctl reload caddy
+# Karbol (karbol.gallab.top). Installed by the deploy Action as /etc/caddy/sites/renewals.caddy.
 # Behind the shared Google login (the app runs with HUB_AUTH=1 and trusts Remote-Email).
-renewals.gallab.top {
+karbol.gallab.top {
     encode zstd gzip
     header {
         X-Robots-Tag "noindex, nofollow"
@@ -28,6 +28,28 @@ renewals.gallab.top {
         handle {
             import auth
             reverse_proxy 127.0.0.1:3000
+        }
+    }
+}
+
+# The old name (until 2026-10-23). Everything moves to karbol.gallab.top with a permanent
+# redirect, so links in old emails and the Google Calendar subscription keep working.
+# Exception: the Resend webhook keeps being served here (a redirect would turn its POST
+# into a GET and lose the email) until the endpoint is changed in Resend.
+renewals.gallab.top {
+    header -Server
+    route {
+        request_header -Remote-User
+        request_header -Remote-Email
+        request_header -Remote-Name
+        request_header -Remote-Groups
+
+        @inbound path /api/inbound
+        handle @inbound {
+            reverse_proxy 127.0.0.1:3000
+        }
+        handle {
+            redir https://karbol.gallab.top{uri} permanent
         }
     }
 }

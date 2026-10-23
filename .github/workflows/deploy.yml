@@ -1,4 +1,4 @@
-name: Deploy renewals.gallab.top
+name: Deploy karbol.gallab.top
 # Push to master → the server rebuilds the container. Needs repo secrets VPS_SSH_KEY and VPS_HOST.
 # Secrets for the app itself live only in /srv/renewals/.env on the server; data in /srv/renewals/data.
 on:
@@ -38,6 +38,9 @@ jobs:
         env: { H: "${{ secrets.VPS_HOST }}" }
         run: |
           ssh deploy@$H 'sleep 6; curl -s -o /dev/null -m 10 -H "Remote-Email: ci@gallab.top" -w "app with hub identity: %{http_code}\n" http://127.0.0.1:3000/'
-          code=$(curl -s -o /dev/null -m 15 -w "%{http_code}" https://renewals.gallab.top/)
-          echo "renewals.gallab.top → $code (401 = login gate, expected)"
+          code=$(curl -s -o /dev/null -m 15 -w "%{http_code}" https://karbol.gallab.top/)
+          echo "karbol.gallab.top → $code (401 = login gate, expected)"
           test "$code" = "401"
+          old=$(curl -s -o /dev/null -m 15 -w "%{http_code}" https://renewals.gallab.top/)
+          echo "renewals.gallab.top → $old (301 = redirect to the new name, expected)"
+          test "$old" = "301"
