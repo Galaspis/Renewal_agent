@@ -32,24 +32,10 @@ karbol.gallab.top {
     }
 }
 
-# The old name (until 2026-10-23). Everything moves to karbol.gallab.top with a permanent
-# redirect, so links in old emails and the Google Calendar subscription keep working.
-# Exception: the Resend webhook keeps being served here (a redirect would turn its POST
-# into a GET and lose the email) until the endpoint is changed in Resend.
+# The old name (until 2026-10-23). Everything redirects permanently to karbol.gallab.top,
+# so links in old emails and the Google Calendar subscription keep working.
+# The Resend webhook was pointed at the new name on 2026-10-23.
 renewals.gallab.top {
     header -Server
-    route {
-        request_header -Remote-User
-        request_header -Remote-Email
-        request_header -Remote-Name
-        request_header -Remote-Groups
-
-        @inbound path /api/inbound
-        handle @inbound {
-            reverse_proxy 127.0.0.1:3000
-        }
-        handle {
-            redir https://karbol.gallab.top{uri} permanent
-        }
-    }
+    redir https://karbol.gallab.top{uri} permanent
 }
