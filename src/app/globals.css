@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f5fa;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --card: #ffffff;
+  --line: #e6eaf2;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --danger: #ef4444;
+  --warn: #f97316;
+  --ok: #22c55e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-ok: var(--ok);
+  --font-sans: var(--font-heebo);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input[type="date"],
+input[type="number"] {
+  color-scheme: light;
+}

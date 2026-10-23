@@ -1,0 +1,32 @@
+# Renewals. Install as /etc/caddy/sites/renewals.caddy, then: sudo systemctl reload caddy
+# Behind the shared Google login (the app runs with HUB_AUTH=1 and trusts Remote-Email).
+renewals.gallab.top {
+    encode zstd gzip
+    header {
+        X-Robots-Tag "noindex, nofollow"
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # "route" keeps the written order: strip client identity headers BEFORE the login sets them.
+    route {
+        request_header -Remote-User
+        request_header -Remote-Email
+        request_header -Remote-Name
+        request_header -Remote-Groups
+
+        # Resend delivers received emails here. No login: the app checks the signature itself.
+        # Google Calendar fetches the iCal feed here. No login: the long token in the URL is the secret.
+        # /a/<token> are the one-tap buttons inside the tool's emails. No login: single-use random token.
+        @public path /api/inbound /api/calendar/* /a/*
+        handle @public {
+            reverse_proxy 127.0.0.1:3000
+        }
+        handle {
+            import auth
+            reverse_proxy 127.0.0.1:3000
+        }
+    }
+}
