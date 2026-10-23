@@ -1,63 +1,28 @@
-# Renewals
+# כָּרבוֹל (Karbol)
 
-A small family tool that keeps track of subscriptions and insurance policies so nothing renews by surprise.
+A family board for everything that renews: insurance policies, licences, subscriptions, domains, warranties. Forward a renewal email to the tool's address and it becomes an item, with a receipt email you can act on. Reminders carry one-tap buttons and keep coming until you answer. The rooster is the brand: it calls for attention.
 
-Live at https://renewals.gallab.top (private instance, behind a shared Google sign-in).
+Live at **https://renewals.gallab.top** behind the gallab Google login. Deployed by pushing to `master` (GitHub Action rebuilds the container on the gallab server).
 
-Forward a renewal email or a PDF policy to the tool's inbound address. The text is parsed, an LLM pulls out the provider, the amount, the renewal date and the cancellation window, and a draft appears in the inbox for a one-click confirm. From then on the tool emails reminders before each deadline, shows everything on a calendar, and keeps the original documents attached to the item.
+## Where things are
 
-## Features
+| What | Where |
+|---|---|
+| Brand kit (logos, icons, colours, fonts, guidelines) | `karbol-brand-kit/` (source of truth); the app uses copies in `public/brand/` and `src/app/fonts/` |
+| How forwarded email gets in, the receipt and its buttons | `docs/inbound-mail.md` |
+| Reminders: ladder, buttons, acknowledgement, Sunday timing | `docs/reminders.md` |
+| Putting it on the server from scratch | `docs/deploy-renewals.md` |
+| Data on the server | `/srv/renewals/data` (SQLite `renewal.db`, `uploads/`, `inbox/`, `outbox/`), owned by uid 1000 |
 
-- **Inbox**: forwarded emails and PDFs land here as drafts, with the extracted fields pre-filled.
-- **Items and insurance**: one list for subscriptions, one for policies, each with documents, notes and history.
-- **Reminders**: a ladder of alert emails before renewal and cancellation dates, with one-tap buttons that work without logging in.
-- **Calendar**: a month view plus an iCal feed you can subscribe to from a phone.
-- **Activity log**: what the tool did and when (emails received, reminders sent, links used).
-- **Switchable AI**: Claude, OpenAI or Gemini for the extraction step, chosen in Settings.
-- **Hebrew, right-to-left UI.**
-
-## Stack
-
-Next.js 16 (App Router), TypeScript, Tailwind CSS 4, `zod`. SQLite through Node's built-in `node:sqlite` (no native module), kept in a `data/` folder together with uploads. `mailparser` for inbound mail, `unpdf` for PDF text, `nodemailer` or Resend for outgoing mail. `jose` signs the session cookie; the one-tap links in emails are random single-use tokens stored in an `action_links` table (`src/lib/action-links.ts`). Runs as one Docker container.
-
-Requires **Node 22.5 or newer** (for `node:sqlite`); the Dockerfile uses Node 24.
-
-## Run locally
+## Run it on this PC
 
 ```bash
 npm install
-cp .env.example .env.local   # set FAMILY_PASSWORD and SESSION_SECRET at minimum
 npm run dev
 ```
 
-Open the address the command prints and log in with the password you set. Everything else in `.env.example` is optional: email sending, inbound mail, AI keys, a cron secret.
+Then open the address `next dev` prints and log in with the family password from `.env.local` (locally there is no Google login; on the server the hub's login replaces it).
 
-## Auth model
+## Design
 
-Two modes, picked by environment:
-
-- **Local**: a shared `FAMILY_PASSWORD` and a signed session cookie (`jose`, `src/proxy.ts`).
-- **Hosted**: `HUB_AUTH=1` makes the app trust the `Remote-Email` header that the reverse proxy sets after a Google sign-in (`src/lib/hub-auth.ts`). The proxy strips any `Remote-*` header a client sends, so the app never has to check the password itself.
-
-## Inbound mail
-
-Point a Resend Receiving webhook at `/api/inbound`. Set `INBOUND_ADDRESS` (the address people forward to) and `RESEND_WEBHOOK_SECRET` (the webhook's signing secret; it can also be pasted in Settings). Each received email is parsed, attachments are stored, the extractor fills a draft, and a confirmation email with action buttons goes back.
-
-## Reminders
-
-A timer inside the app (`src/instrumentation.ts`, `src/lib/background.ts`) checks every 15 minutes and sends the day's reminders once, after 08:00 Israel time. `/api/cron/alerts` with `CRON_SECRET` is an optional external trigger for schedulers. The ladder, the overdue nag and the buttons are described in [docs/reminders.md](docs/reminders.md).
-
-## Deploy
-
-A push to `master` runs `.github/workflows/deploy.yml`: it joins the private network, syncs the source to the server, runs `docker compose build`, installs the Caddy site from `deploy/` and finishes with a smoke test. The hosted instance is a small VPS with Docker and Caddy. Data lives outside the container, so rebuilding never touches it.
-
-## Project layout
-
-```
-src/app/          pages, server actions, API routes (calendar, cron, documents, inbound), /a/<token> action pages
-src/lib/          db, auth, mail, alerts ladder, action links, AI extraction, parsing
-src/proxy.ts      login gate (session cookie or hub header)
-deploy/           Caddy site for the hosted instance
-docs/reminders.md how and when reminders are sent
-Dockerfile        production image
-```
+Palette and type come from the brand guide (`karbol-brand-kit/guidelines/brand-guide-he.md`): navy `#101D55` for text, blue `#2451D1` for navigation and the summary band, orange `#FF7048` for the one important action (dark text on orange, white on blue), alert red `#D63232`, background `#F2F6FC`. Heebo, weights 400–800. Tokens live in `src/app/globals.css`; shared button and card classes in `src/components/styles.ts`; the 30 Karbol icons as React components in `src/components/Icons.tsx`.

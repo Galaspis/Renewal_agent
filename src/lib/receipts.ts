@@ -46,7 +46,7 @@ function linesHtml(lines: string[]): string {
   return `<div style="margin:0 0 8px">${lines.map((l) => autoLine(l)).join("")}</div>`;
 }
 
-function intro(text: string, color = "#1c1917"): string {
+function intro(text: string, color = "#101d55"): string {
   return autoLine(text, `font-size:17px;margin:0 0 12px;color:${color}`);
 }
 
@@ -152,7 +152,7 @@ export function buildReceipt(outcome: IngestOutcome): MailMessage {
       return {
         subject: `לא נקלט: ${isolate(outcome.subject || "מייל שהועבר")}`,
         text: [introText, "", textButtons(buttons)].join("\n"),
-        html: shell(`${intro(introText, "#b91c1c")}${emailButtons(buttons)}`),
+        html: shell(`${intro(introText, "#d63232")}${emailButtons(buttons)}`),
       };
     }
   }

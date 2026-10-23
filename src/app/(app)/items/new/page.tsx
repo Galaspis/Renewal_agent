@@ -31,7 +31,7 @@ export default async function NewItemPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold tracking-tight">{draft ? "אישור טיוטה" : "הוסף מנוי"}</h1>
+      <h1 className="text-xl font-semibold tracking-tight">{draft ? "אישור טיוטה" : "הוספת חידוש"}</h1>
       <p className="mt-1.5 text-sm leading-6 text-muted">
         {draft ? "בדקו תאריך ומחיר. כלום לא נשמר בלוח עד הלחיצה על שמירה." : "קודם תאריך ומחיר. אפשר גם למלא ידנית."}
       </p>

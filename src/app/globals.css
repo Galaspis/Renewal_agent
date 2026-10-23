@@ -1,16 +1,23 @@
 @import "tailwindcss";
 
+/* Karbol palette (karbol-brand-kit/developer/design-tokens.css).
+   Token names stay as the app has always used them, so every component picks the
+   new colours up without edits: accent = Karbol blue, primary = Karbol orange. */
 :root {
-  --background: #f3f5fa;
-  --foreground: #0f172a;
-  --muted: #64748b;
+  --background: #f2f6fc;
+  --foreground: #101d55;
+  --muted: #53617c;
   --card: #ffffff;
-  --line: #e6eaf2;
-  --accent: #2563eb;
-  --accent-soft: #eff6ff;
-  --danger: #ef4444;
-  --warn: #f97316;
-  --ok: #22c55e;
+  --line: #d9e2f0;
+  --accent: #2451d1;
+  --accent-soft: #e7f1ff;
+  --primary: #ff7048;
+  --primary-soft: #fff1ec;
+  --navy: #101d55;
+  --danger: #d63232;
+  --warn: #ff7048;
+  --ok: #2451d1;
+  --radius: 12px;
 }
 
 @theme inline {
@@ -21,6 +28,9 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-navy: var(--navy);
   --color-danger: var(--danger);
   --color-warn: var(--warn);
   --color-ok: var(--ok);
@@ -51,4 +61,10 @@ a {
 input[type="date"],
 input[type="number"] {
   color-scheme: light;
+}
+
+/* Numbers and dates keep left-to-right order inside Hebrew text (brand guide: bidi isolate). */
+.numeric {
+  direction: ltr;
+  unicode-bidi: isolate;
 }

@@ -16,22 +16,24 @@ function page(title: string, body: string): NextResponse {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>${escapeHtml(title)} · מנויים</title>
+<title>${escapeHtml(title)} · כָּרבוֹל</title>
+<link rel="icon" href="/brand/favicon.svg" type="image/svg+xml">
 <style>
-  body{margin:0;background:#f5f5f4;font-family:Heebo,Assistant,Arial,sans-serif;color:#1c1917;line-height:1.55}
-  main{max-width:480px;margin:0 auto;padding:40px 20px}
-  .card{background:#fff;border-radius:16px;padding:28px 24px;box-shadow:0 2px 12px rgba(15,23,42,.06)}
+  body{margin:0;background:#f2f6fc;font-family:Heebo,Arial,sans-serif;color:#101d55;line-height:1.55}
+  main{max-width:480px;margin:0 auto;padding:32px 20px}
+  .logo{height:40px;width:auto;margin:0 0 18px}
+  .card{background:#fff;border:1px solid #d9e2f0;border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(16,29,85,.06)}
   h1{font-size:20px;margin:0 0 10px}
   p{margin:0 0 12px;font-size:16px}
-  .muted{color:#78716c;font-size:14px}
-  .ok{color:#15803d}.bad{color:#b91c1c}
+  .muted{color:#53617c;font-size:14px}
+  .ok{color:#2451d1}.bad{color:#d63232}
   .row{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px}
-  button,a.btn{display:inline-block;min-height:44px;padding:10px 22px;border-radius:999px;font:inherit;font-weight:600;font-size:16px;cursor:pointer;text-decoration:none}
-  button{background:#2563eb;color:#fff;border:1px solid #2563eb}
-  a.btn{background:#fff;color:#1c1917;border:1px solid #d6d3d1}
+  button,a.btn{display:inline-block;min-height:44px;padding:10px 22px;border-radius:8px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-decoration:none}
+  button{background:#ff7048;color:#101d55;border:1px solid #ff7048}
+  a.btn{background:#fff;color:#101d55;border:1px solid #d9e2f0}
 </style>
 </head>
-<body><main><div class="card">${body}</div></main></body></html>`;
+<body><main><img class="logo" src="/brand/logo.svg" alt="כָּרבוֹל"><div class="card">${body}</div></main></body></html>`;
   return new NextResponse(html, {
     headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
   });

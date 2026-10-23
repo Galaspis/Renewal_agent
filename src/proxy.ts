@@ -37,5 +37,7 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   // /a/<token>: one-tap buttons from emails. No login; the long single-use token is the secret.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|api/inbound|api/calendar|a/).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|site.webmanifest|brand/|robots.txt|api/cron|api/inbound|api/calendar|a/).*)",
+  ],
 };

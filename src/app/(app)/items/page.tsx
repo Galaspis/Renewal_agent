@@ -34,7 +34,7 @@ export default async function ItemsPage({ searchParams }: { searchParams: Promis
   return (
     <div>
       <PageHeader
-        title="הכל"
+        title="כל החידושים"
         description={`${active.length} פעילים · ${rest.length} מושהים או שהסתיימו`}
       />
 
@@ -55,10 +55,10 @@ export default async function ItemsPage({ searchParams }: { searchParams: Promis
 
       {all.length === 0 ? (
         <EmptyState
-          title="אין מנויים עדיין"
+          title="אין חידושים עדיין"
           body="אחרי שתוסיפו את המנוי הראשון, הוא יופיע כאן תמיד — גם אם הוא רחוק."
           actionHref="/items/new"
-          actionLabel="הוסף מנוי"
+          actionLabel="הוספת חידוש"
         />
       ) : (
         <div className="mt-6 space-y-8">

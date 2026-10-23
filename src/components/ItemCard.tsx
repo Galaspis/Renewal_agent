@@ -1,19 +1,20 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
+import { markRenewed } from "@/app/actions";
 import { CATEGORY_LABELS, INSURANCE_TYPE_LABELS } from "@/lib/categories";
-import { displayDate } from "@/lib/dates";
-import { formatDaysLeft, urgencyBadgeClass } from "@/lib/format";
+import { daysUntil, displayDate } from "@/lib/dates";
+import { formatDaysLeft, formatMoney } from "@/lib/format";
 import type { RenewalItem } from "@/lib/types";
-import { CategoryGlyph, IconBuilding, IconCalendar, IconDots, IconTag } from "./Icons";
-import { cardClass } from "./styles";
+import { CategoryGlyph, IconTick } from "./Icons";
+import { btnPrimary, btnSecondary, cardClass } from "./styles";
 
-function Meta({ icon, children }: { icon: ReactNode; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="text-muted">{icon}</span>
-      {children}
-    </span>
-  );
+// The renewal card from the approved Karbol layout: a coloured edge (red when it needs
+// you, blue otherwise), the category icon in a pale circle, the name, the date with its
+// status in words, the amount, and two answers: "חידשתי" in orange and "לפרטים".
+
+function statusClass(days: number): string {
+  if (days < 0) return "bg-danger/10 text-danger";
+  if (days <= 7) return "text-accent";
+  return "text-accent/80";
 }
 
 export function ItemCard({ item }: { item: RenewalItem }) {
@@ -21,55 +22,56 @@ export function ItemCard({ item }: { item: RenewalItem }) {
     item.category === "insurance" && item.subcategory
       ? `ביטוח ${INSURANCE_TYPE_LABELS[item.subcategory]}`
       : CATEGORY_LABELS[item.category];
-  const bits = [
-    category,
-    item.insured,
-    item.amount != null
-      ? item.amount.toLocaleString("he-IL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : null,
-    item.provider,
-  ].filter(Boolean);
+  const days = daysUntil(item.renewal_date);
+  const urgent = item.attention === 1 || days < 0;
+  const edge = urgent ? "border-s-danger" : "border-s-accent";
+  const active = item.status === "active";
 
   return (
-    <Link
-      href={`/items/${item.id}`}
-      className={`${cardClass} flex items-center gap-4 px-4 py-4 transition-shadow hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)]`}
-    >
-      <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
-        <CategoryGlyph category={item.category} className="size-7" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-base font-semibold">{item.name}</div>
-        <div className="mt-0.5 truncate text-sm text-muted">{bits.join(" · ")}</div>
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-          <Meta icon={<IconCalendar className="size-3.5" />}>{displayDate(item.renewal_date)}</Meta>
-          {item.amount != null ? (
-            <Meta icon={<span className="text-[11px] font-semibold">₪</span>}>
-              {item.amount.toLocaleString("he-IL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </Meta>
-          ) : null}
-          <Meta icon={<IconTag className="size-3.5" />}>{category}</Meta>
-          {item.provider ? (
-            <Meta icon={<IconBuilding className="size-3.5" />}>{item.provider}</Meta>
-          ) : null}
+    <article className={`${cardClass} border-s-4 ${edge} px-4 py-4 sm:px-5`}>
+      <div className="flex items-start gap-4">
+        <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent sm:size-16">
+          <CategoryGlyph category={item.category} subcategory={item.subcategory} className="size-8" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs text-muted">
+            {category}
+            {item.provider ? ` · ${item.provider}` : ""}
+            {item.insured ? ` · ${item.insured}` : ""}
+          </div>
+          <Link href={`/items/${item.id}`} className="mt-0.5 block truncate text-lg font-bold leading-7 text-navy hover:text-accent">
+            {item.name}
+          </Link>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="text-muted">
+              תאריך חידוש <span className="numeric font-medium text-foreground">{displayDate(item.renewal_date)}</span>
+            </span>
+            {active ? (
+              <span className={`rounded-md px-2 py-0.5 text-sm font-bold ${statusClass(days)}`}>
+                {item.attention ? "דורש טיפול · " : ""}
+                {days < 0 ? formatDaysLeft(item.renewal_date) : days === 0 ? "היום" : days === 1 ? "מחר" : `בעוד ${days} ימים`}
+              </span>
+            ) : null}
+          </div>
         </div>
+        {item.amount != null ? (
+          <div className="numeric shrink-0 text-xl font-bold text-navy sm:text-2xl">{formatMoney(item.amount, item.currency)}</div>
+        ) : null}
       </div>
-      {item.attention ? (
-        <span className="inline-flex shrink-0 items-center rounded-full bg-danger/10 px-3 py-1 text-xs font-medium text-danger">
-          דורש טיפול
-        </span>
-      ) : (
-        <span
-          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${urgencyBadgeClass(item.renewal_date)}`}
-        >
-          <IconCalendar className="size-3.5" />
-          {formatDaysLeft(item.renewal_date)}
-        </span>
-      )}
-      <span className="hidden shrink-0 text-muted sm:inline-flex">
-        <IconDots className="size-5" />
-      </span>
-    </Link>
+      <div className="mt-3 flex flex-wrap gap-2 ps-0 sm:ps-20">
+        {active ? (
+          <form action={markRenewed.bind(null, item.id)}>
+            <button type="submit" className={btnPrimary}>
+              <IconTick className="size-4" />
+              {item.cadence === "once" ? "בוצע" : "חידשתי"}
+            </button>
+          </form>
+        ) : null}
+        <Link href={`/items/${item.id}`} className={btnSecondary}>
+          לפרטים
+        </Link>
+      </div>
+    </article>
   );
 }
 

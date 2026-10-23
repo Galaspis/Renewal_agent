@@ -83,7 +83,7 @@ export function buildIcs(baseUrl: string, items = listActiveItems()): string {
     "PRODID:-//renewals//he",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    icsLine("X-WR-CALNAME", "חידושים ומנויים"),
+    icsLine("X-WR-CALNAME", "כָּרבוֹל"),
     "X-WR-TIMEZONE:Asia/Jerusalem",
     "REFRESH-INTERVAL;VALUE=DURATION:PT6H",
     "X-PUBLISHED-TTL:PT6H",

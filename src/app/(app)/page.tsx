@@ -1,52 +1,77 @@
-import type { ReactNode } from "react";
-import { markRenewed, setItemEnded } from "@/app/actions";
+import { setItemEnded } from "@/app/actions";
 import { runAlertCheck } from "@/lib/alerts";
 import { requireSession } from "@/lib/auth";
 import { getSetting } from "@/lib/db";
-import { daysUntil } from "@/lib/dates";
+import { daysUntil, displayDate } from "@/lib/dates";
 import { listActiveItems, rollForwardAutoRenewals } from "@/lib/items";
 import { countPendingProposals } from "@/lib/proposals";
 import type { RenewalItem } from "@/lib/types";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
-import { IconAlarm, IconCalendar, IconCheck, IconSparkle } from "@/components/Icons";
 import { ItemCard } from "@/components/ItemCard";
-import { PageHeader } from "@/components/PageHeader";
 import { StatusStrip } from "@/components/StatusStrip";
 import { btnSecondary, cardClass } from "@/components/styles";
 
 export const dynamic = "force-dynamic";
 
-function Stat({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string;
-  value: number;
-  icon: ReactNode;
-  tone: "accent" | "ok" | "warn" | "danger";
-}) {
-  const tones = {
-    accent: "bg-accent-soft text-accent",
-    ok: "bg-ok/10 text-ok",
-    warn: "bg-warn/10 text-warn",
-    danger: "bg-danger/10 text-danger",
+/** The blue band from the approved layout: title, one line of counts, the three nearest dates. */
+function SummaryBand({ items, attention, overdue }: { items: RenewalItem[]; attention: number; overdue: number }) {
+  const soon = items.filter((item) => {
+    const d = daysUntil(item.renewal_date);
+    return d >= 0 && d <= 30;
+  }).length;
+  const needs = attention + overdue;
+  const parts = [
+    needs > 0 ? `${needs} דורש טיפול` : null,
+    soon > 0 ? `${soon} בקרוב` : null,
+  ].filter(Boolean);
+  const nearest = [...items]
+    .sort((a, b) => a.renewal_date.localeCompare(b.renewal_date))
+    .slice(0, 3);
+
+  const dot = (item: RenewalItem) => {
+    const d = daysUntil(item.renewal_date);
+    if (item.attention || d < 0) return "bg-primary";
+    if (d <= 7) return "bg-[#8fb4ff]";
+    return "bg-white";
+  };
+  const label = (item: RenewalItem) => {
+    const d = daysUntil(item.renewal_date);
+    if (item.attention || d < 0) return "דורש טיפול";
+    if (d === 0) return "היום";
+    if (d === 1) return "מחר";
+    return `בעוד ${d} ימים`;
   };
 
   return (
-    <div className={`${cardClass} flex items-center justify-between px-5 py-4`}>
-      <div>
-        <div className="text-2xl font-semibold tabular-nums tracking-tight">{value}</div>
-        <div className="mt-1 text-sm text-muted">{label}</div>
+    <section className="mt-5 rounded-2xl bg-accent px-5 py-5 text-white sm:px-7 sm:py-6">
+      <div className="flex flex-wrap items-start justify-between gap-6">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">החידושים שלך</h1>
+          <p className="mt-1 text-sm text-white/85 sm:text-base">
+            {parts.length > 0 ? parts.join(" · ") : "הכל במעקב, אין מה לטפל בו עכשיו."}
+          </p>
+        </div>
+        {nearest.length > 0 ? (
+          <ul className="grid gap-1.5 text-sm sm:border-s sm:border-white/30 sm:ps-6">
+            {nearest.map((item) => (
+              <li key={item.id} className="flex items-center gap-3">
+                <span className={`size-3 shrink-0 rounded-full ${dot(item)}`} />
+                <span className="w-24 text-white/85">{label(item)}</span>
+                <span className="numeric font-medium">{displayDate(item.renewal_date)}</span>
+                <Link href={`/items/${item.id}`} className="truncate text-white/85 hover:text-white hover:underline">
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
-      <span className={`flex size-11 items-center justify-center rounded-full ${tones[tone]}`}>{icon}</span>
-    </div>
+    </section>
   );
 }
 
-/** Any overdue item, in whichever group it sits, gets its two quick answers under the card. */
+/** Any overdue item, in whichever group it sits, gets its second answer under the card. */
 function GroupList({ items }: { items: RenewalItem[] }) {
   return (
     <div className="grid gap-3">
@@ -55,12 +80,7 @@ function GroupList({ items }: { items: RenewalItem[] }) {
           <ItemCard item={item} />
           {daysUntil(item.renewal_date) < 0 ? (
             <div className="mt-2 flex flex-wrap items-center gap-2 px-2 text-xs text-muted">
-              <span>באיחור. מה קרה?</span>
-              <form action={markRenewed.bind(null, item.id)}>
-                <button type="submit" className={btnSecondary}>
-                  {item.cadence === "once" ? "בוצע" : "חידשתי"}
-                </button>
-              </form>
+              <span>באיחור. אם ביטלתם את המנוי:</span>
               <form action={setItemEnded.bind(null, item.id)}>
                 <button type="submit" className={btnSecondary}>
                   ביטלתי, לסיים
@@ -112,58 +132,45 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title="הקרובים"
-        description="מה שדורש תשומת לב ב־90 הימים הקרובים"
-        icon={<IconCalendar className="size-6 text-accent" />}
-      />
+      <SummaryBand items={items} attention={attention.length} overdue={overdue.length} />
 
       <StatusStrip />
 
       {pendingDrafts > 0 ? (
         <Link
           href="/inbox"
-          className={`${cardClass} mt-3 flex items-center justify-between border border-danger/20 px-5 py-4 text-sm hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)]`}
+          className={`${cardClass} mt-3 flex items-center justify-between border-s-4 border-s-primary px-5 py-4 text-sm hover:border-accent`}
         >
           <span>
-            <span className="me-2 inline-flex min-w-6 items-center justify-center rounded-full bg-danger px-2 text-xs font-semibold leading-6 text-white">
+            <span className="me-2 inline-flex min-w-6 items-center justify-center rounded-full bg-danger px-2 text-xs font-bold leading-6 text-white">
               {pendingDrafts}
             </span>
             {pendingDrafts === 1 ? "טיוטה אחת ממתינה להחלטה" : "טיוטות ממתינות להחלטה"}
           </span>
-          <span className="font-medium text-accent">לפתיחה</span>
+          <span className="font-bold text-accent">לפתיחה</span>
         </Link>
-      ) : null}
-
-      {items.length > 0 ? (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="פעילים" value={items.length} icon={<IconCheck className="size-5" />} tone="accent" />
-          <Stat label="החודש" value={month.length} icon={<IconSparkle className="size-5" />} tone="ok" />
-          <Stat label="השבוע" value={week.length} icon={<IconCalendar className="size-5" />} tone="warn" />
-          <Stat label="באיחור" value={overdue.length} icon={<IconAlarm className="size-5" />} tone="danger" />
-        </div>
       ) : null}
 
       {items.length === 0 ? (
         <EmptyState
-          title="עוד אין מנויים"
+          title="עוד אין חידושים"
           body="הוסיפו ידנית, או העבירו מייל (פוליסה, חשבונית, הודעת חידוש) לכתובת שמופיעה בהגדרות."
           actionHref="/items/new"
-          actionLabel="הוסף מנוי"
+          actionLabel="הוספת חידוש"
         />
       ) : groups.length === 0 ? (
         <EmptyState
           title="הכל שקט ל־90 יום"
-          body="אין מנויים בטווח הקרוב. השאר מופיע במסך ״הכל״."
+          body="אין חידושים בטווח הקרוב. השאר מופיע במסך ״כל החידושים״."
           actionHref="/items"
-          actionLabel="לכל הפריטים"
+          actionLabel="לכל החידושים"
         />
       ) : (
-        <div className="mt-8 space-y-6">
+        <div className="mt-8 space-y-7">
           {groups.map((group) => (
             <section key={group.title}>
-              <h2 className="mb-3 text-sm font-medium text-foreground">
-                {group.title} ({group.items.length})
+              <h2 className="mb-3 text-base font-bold text-navy">
+                {group.title} <span className="text-muted">({group.items.length})</span>
               </h2>
               <GroupList items={group.items} />
             </section>

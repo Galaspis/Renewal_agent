@@ -26,15 +26,16 @@ export type EmailButton = { label: string; href: string; tone?: "primary" | "qui
 
 /** A row of buttons that render in Gmail (plain anchors with inline styles). */
 export function emailButtons(buttons: EmailButton[]): string {
+  // Karbol: the important action is orange with navy text; the rest white with a pale border.
   const styles = {
-    primary: "background:#2563eb;color:#ffffff;border:1px solid #2563eb",
-    quiet: "background:#ffffff;color:#1c1917;border:1px solid #d6d3d1",
-    danger: "background:#ffffff;color:#b91c1c;border:1px solid #fca5a5",
+    primary: "background:#ff7048;color:#101d55;border:1px solid #ff7048",
+    quiet: "background:#ffffff;color:#101d55;border:1px solid #d9e2f0",
+    danger: "background:#ffffff;color:#d63232;border:1px solid #f1b4b4",
   };
   return `<p style="margin:18px 0 6px;line-height:1">${buttons
     .map(
       (b) =>
-        `<a href="${escapeHtml(b.href)}" style="display:inline-block;margin:0 4px 8px 4px;padding:10px 16px;border-radius:999px;font-weight:600;text-decoration:none;font-size:14px;line-height:1.3;white-space:nowrap;${styles[b.tone ?? "quiet"]}">${escapeHtml(b.label)}</a>`,
+        `<a href="${escapeHtml(b.href)}" style="display:inline-block;margin:0 4px 8px 4px;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px;line-height:1.3;white-space:nowrap;${styles[b.tone ?? "quiet"]}">${escapeHtml(b.label)}</a>`,
     )
     .join("")}</p>`;
 }
@@ -46,14 +47,17 @@ export function emailShell(
 ): string {
   const dir = options.dir ?? "rtl";
   const align = dir === "rtl" ? "right" : "left";
-  const footer = options.footer ?? "נשלח מהלוח ״מנויים״. הכפתורים עובדים בלי התחברות, פעם אחת, ל־30 יום.";
+  const footer = options.footer ?? "נשלח מכָּרבוֹל. הכפתורים עובדים בלי התחברות, פעם אחת, ל־30 יום.";
   // Gmail shows the message in a left-to-right page. A full-width outer block with the
   // text direction, and an inline-block inside it, keeps a Hebrew email hugging the
   // right edge instead of floating on the left with right-aligned text.
-  return `<div dir="${dir}" lang="${dir === "rtl" ? "he" : "en"}" style="width:100%;text-align:${align}">
-<div style="display:inline-block;width:100%;max-width:640px;text-align:${align};font-family:Heebo,Assistant,Arial,sans-serif;color:#1c1917;line-height:1.55;font-size:16px">
+  return `<div dir="${dir}" lang="${dir === "rtl" ? "he" : "en"}" style="width:100%;text-align:${align};background:#f2f6fc;padding:16px 0">
+<div style="display:inline-block;width:100%;max-width:640px;text-align:${align};font-family:Heebo,Arial,sans-serif;color:#101d55;line-height:1.55;font-size:16px">
+<div dir="rtl" style="text-align:right;margin:0 0 14px"><img src="${mailBaseUrl()}/brand/logo-480.png" alt="כָּרבוֹל" width="150" style="height:auto;border:0"></div>
+<div style="background:#ffffff;border:1px solid #d9e2f0;border-radius:12px;padding:20px 22px">
 ${inner}
-<p dir="rtl" style="margin:22px 0 0;font-size:12px;color:#78716c;text-align:right">${escapeHtml(footer)}</p>
+</div>
+<p dir="rtl" style="margin:14px 0 0;font-size:12px;color:#53617c;text-align:right">${escapeHtml(footer)}</p>
 </div>
 </div>`;
 }
@@ -77,7 +81,7 @@ export function alertRecipients(): string[] {
   return parseAddresses(process.env.ALERT_TO_EMAIL);
 }
 
-export const DEFAULT_SENDER_NAME = "מנויים וביטוחים";
+export const DEFAULT_SENDER_NAME = "כָּרבוֹל";
 
 /** The display name shown in the inbox. Set in Settings; the address itself stays in .env. */
 export function senderName(): string {

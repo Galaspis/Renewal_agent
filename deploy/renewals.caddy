@@ -20,7 +20,8 @@ renewals.gallab.top {
         # Resend delivers received emails here. No login: the app checks the signature itself.
         # Google Calendar fetches the iCal feed here. No login: the long token in the URL is the secret.
         # /a/<token> are the one-tap buttons inside the tool's emails. No login: single-use random token.
-        @public path /api/inbound /api/calendar/* /a/*
+        # /brand/* and the favicon are the logo and icons, also used inside emails and on the button pages.
+        @public path /api/inbound /api/calendar/* /a/* /brand/* /favicon.ico /site.webmanifest
         handle @public {
             reverse_proxy 127.0.0.1:3000
         }

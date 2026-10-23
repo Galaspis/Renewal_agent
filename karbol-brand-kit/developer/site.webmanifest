@@ -1,0 +1,27 @@
+{
+  "name": "כָּרבוֹל",
+  "short_name": "כרבול",
+  "lang": "he",
+  "dir": "rtl",
+  "display": "standalone",
+  "background_color": "#F2F6FC",
+  "theme_color": "#2451D1",
+  "icons": [
+    {
+      "src": "../app/karbol-app-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../app/karbol-app-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "../app/karbol-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

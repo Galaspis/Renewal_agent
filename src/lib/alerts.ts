@@ -173,7 +173,7 @@ function messageFor(dispatch: AlertDispatch) {
         ${autoLine(auto, "margin:0 0 12px")}
         <p dir="rtl" style="margin:0 0 8px"><strong>חלופות</strong><br>${escapeHtml(alternatives)}</p>
         ${item.notes ? autoLine(item.notes, "margin:0 0 8px") : ""}
-        <p dir="rtl" style="margin:14px 0 0;font-size:14px;color:#57534e">התזכורות ימשיכו עד שתלחצו על אחד הכפתורים.</p>
+        <p dir="rtl" style="margin:14px 0 0;font-size:14px;color:#53617c">התזכורות ימשיכו עד שתלחצו על אחד הכפתורים.</p>
         ${emailButtons(buttons)}`,
       { dir },
     ),
