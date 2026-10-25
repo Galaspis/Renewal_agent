@@ -14,8 +14,9 @@ export default async function EditItemPage({ params }: { params: Promise<{ id: s
 
   return (
     <div>
-      <h1 className="text-xl font-semibold tracking-tight">עריכת {item.name}</h1>
-      <div className="mt-6">
+      <h1 className="text-[28px] font-bold leading-tight text-navy">עריכה</h1>
+      <p className="mt-1 text-[15px] text-muted">{item.name}</p>
+      <div className="mt-8">
         <ItemForm item={item} action={updateItem.bind(null, item.id)} submitLabel="שמירת שינויים" />
       </div>
     </div>

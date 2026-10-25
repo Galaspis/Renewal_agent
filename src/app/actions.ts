@@ -6,7 +6,7 @@ import { runAlertCheck } from "@/lib/alerts";
 import { clearSession, createSession, passwordsMatch, requireSession } from "@/lib/auth";
 import { HUB_LOGOUT_URL, hubAuthEnabled } from "@/lib/hub-auth";
 import { rotateCalendarToken } from "@/lib/calendar";
-import { getSetting, setSetting } from "@/lib/db";
+import { getSetting, run, setSetting } from "@/lib/db";
 import {
   createItemRecord,
   deleteDocumentRecord,
@@ -157,6 +157,41 @@ export async function saveSettings(formData: FormData) {
   redirect("/settings?saved=1");
 }
 
+// Settings, one card at a time (each card has its own save).
+export async function saveAlertSettings(formData: FormData) {
+  await requireSession();
+  setSetting("alert_emails", String(formData.get("alert_emails") ?? "").trim());
+  setSetting("sender_name", String(formData.get("sender_name") ?? "").trim().slice(0, 60));
+  setSetting("auto_check", formData.get("auto_check") === "on" ? "1" : "0");
+  revalidatePath("/settings");
+  redirect("/settings?saved=alerts#alerts");
+}
+
+export async function saveInboundSettings(formData: FormData) {
+  await requireSession();
+  const secret = String(formData.get("inbound_webhook_secret") ?? "").trim();
+  if (secret) setSetting("inbound_webhook_secret", secret);
+  setSetting("auto_apply", formData.get("auto_apply") === "on" ? "1" : "0");
+  revalidatePath("/settings");
+  redirect("/settings?saved=inbound#inbound");
+}
+
+export async function saveAiSettings(formData: FormData) {
+  await requireSession();
+  const provider = String(formData.get("ai_provider") ?? "auto").trim() || "auto";
+  setSetting("ai_provider", provider);
+  for (const [field, key] of [
+    ["anthropic_api_key", "anthropic_api_key"],
+    ["openai_api_key", "openai_api_key"],
+    ["gemini_api_key", "gemini_api_key"],
+  ] as const) {
+    const value = String(formData.get(field) ?? "").trim();
+    if (value) setSetting(key, value);
+  }
+  revalidatePath("/settings");
+  redirect("/settings?saved=ai#ai");
+}
+
 export async function rotateCalendarLink() {
   await requireSession();
   rotateCalendarToken();
@@ -188,6 +223,15 @@ export async function setItemEnded(id: string) {
   await requireSession();
   setItemStatus(id, "ended");
   logActivity("action", "סומן כהסתיים (מהלוח)", { itemId: id });
+  revalidatePath("/");
+  revalidatePath(`/items/${id}`);
+}
+
+/** "הסר סימון": the item no longer needs a decision. */
+export async function clearAttention(id: string) {
+  await requireSession();
+  run("UPDATE items SET attention = 0, updated_at = ? WHERE id = ?", [new Date().toISOString(), id]);
+  logActivity("action", "הסימון ״דורש טיפול״ הוסר (מהלוח)", { itemId: id });
   revalidatePath("/");
   revalidatePath(`/items/${id}`);
 }

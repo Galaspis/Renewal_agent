@@ -1,11 +1,10 @@
 import Link from "next/link";
+import { ItemList } from "@/components/ItemCard";
 import { PageHeader } from "@/components/PageHeader";
 import { btnSecondary, cardClass } from "@/components/styles";
 import { requireSession } from "@/lib/auth";
 import { occurrencesBetween } from "@/lib/calendar";
-import { CATEGORY_LABELS } from "@/lib/categories";
-import { displayDate, formatISODate, todayISO } from "@/lib/dates";
-import { formatMoney } from "@/lib/format";
+import { formatISODate, todayISO } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -79,9 +78,6 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             היום
           </Link>
         ) : null}
-        <Link href="/settings#calendar" className="ms-auto text-sm text-accent hover:underline">
-          חיבור ליומן Google
-        </Link>
       </div>
 
       <div className={`${cardClass} mt-4 overflow-hidden`}>
@@ -128,25 +124,16 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         </div>
       </div>
 
-      {occurrences.length > 0 ? (
-        <ul className="mt-6 grid gap-2">
-          {occurrences.map((occ) => (
-            <li key={`${occ.item.id}-${occ.date}-row`}>
-              <Link href={`/items/${occ.item.id}`} className={`${cardClass} flex items-center gap-4 px-4 py-3 text-sm`}>
-                <span className={`w-20 shrink-0 font-medium ${occ.date < today ? "text-danger" : ""}`}>{displayDate(occ.date)}</span>
-                <span className="min-w-0 flex-1 truncate font-medium">{occ.item.name}</span>
-                <span className="hidden truncate text-muted sm:inline">
-                  {CATEGORY_LABELS[occ.item.category]}
-                  {occ.item.provider ? ` · ${occ.item.provider}` : ""}
-                </span>
-                <span className="shrink-0 text-muted">{formatMoney(occ.item.amount, occ.item.currency)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-6 text-sm text-muted">אין חידושים בחודש הזה.</p>
-      )}
+      <section className="mt-10">
+        <h2 className="mb-3 text-[15px] font-semibold text-navy">
+          בחודש הזה <span className="font-normal text-muted">({occurrences.length})</span>
+        </h2>
+        {occurrences.length > 0 ? (
+          <ItemList items={occurrences.map((occ) => occ.item)} />
+        ) : (
+          <p className="text-[15px] text-muted">אין חידושים בחודש הזה.</p>
+        )}
+      </section>
     </div>
   );
 }
