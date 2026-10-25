@@ -27,8 +27,8 @@ export default async function ItemsPage({ searchParams }: { searchParams: Promis
   const rest = items.filter((item) => item.status !== "active");
 
   const pill = (on: boolean) =>
-    `inline-flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm transition-colors ${
-      on ? "bg-accent text-white" : "bg-card text-muted shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:text-foreground"
+    `inline-flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors ${
+      on ? "bg-navy text-white" : "bg-card text-muted ring-1 ring-line hover:text-navy"
     }`;
 
   return (

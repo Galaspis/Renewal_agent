@@ -3,8 +3,7 @@ import { lastAlertRun } from "@/lib/alerts";
 import { getSetting } from "@/lib/db";
 import { hoursSince } from "@/lib/dates";
 import { inboundConfigured, lastInbound } from "@/lib/inbound";
-import { IconAlert, IconBell, IconEmail, IconHistory } from "./Icons";
-import { cardClass } from "./styles";
+import { IconAlert } from "./Icons";
 
 // What the tool last did, and a red box when something is wrong. The point is that a
 // silent failure (like the read-only database of 2026-10-19) is visible the next time
@@ -39,7 +38,7 @@ export function StatusProblems() {
   const problems = systemProblems();
   if (problems.length === 0) return null;
   return (
-    <div className="flex gap-3 rounded-2xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">
+    <div className="flex gap-3 rounded-2xl bg-danger/5 px-4 py-3 text-sm text-danger ring-1 ring-danger/20">
       <IconAlert className="mt-0.5 size-5 shrink-0" />
       <div className="space-y-0.5">
         {problems.map((p) => (
@@ -50,8 +49,8 @@ export function StatusProblems() {
   );
 }
 
-/** The sidebar card: last email, last reminder run, link to the activity log. */
-export function StatusCard() {
+/** One quiet line: last email, last reminder run, link to the log. */
+export function StatusLine() {
   const inbound = lastInbound();
   const alerts = lastAlertRun();
   const inboundOutcome = inbound
@@ -65,42 +64,19 @@ export function StatusCard() {
             ? "כבר היה"
             : "לא רלוונטי"
     : null;
-
+  const parts = [
+    inbound ? `מייל אחרון ${when(inbound.scannedAt)} (${inboundOutcome})` : "עדיין לא הגיע מייל",
+    alerts
+      ? `תזכורות נבדקו ${when(alerts.checkedAt)}${alerts.sent.length > 0 ? `, נשלחו ${alerts.sent.length}` : ""}`
+      : "תזכורות עדיין לא נבדקו",
+  ];
   return (
-    <section className={`${cardClass} p-4`}>
-      <h2 className="text-sm font-bold text-navy">מה הכלי עשה לאחרונה</h2>
-      <ul className="mt-3 space-y-3 text-sm">
-        <li className="flex gap-3">
-          <IconEmail className="mt-0.5 size-5 shrink-0 text-accent" />
-          <div className="min-w-0">
-            <div className="font-medium">מייל אחרון</div>
-            {inbound ? (
-              <div className="truncate text-muted">
-                {when(inbound.scannedAt)} · {inbound.subject || "בלי נושא"} · {inboundOutcome}
-              </div>
-            ) : (
-              <div className="text-muted">עדיין לא הגיע מייל.</div>
-            )}
-          </div>
-        </li>
-        <li className="flex gap-3">
-          <IconBell className="mt-0.5 size-5 shrink-0 text-accent" />
-          <div className="min-w-0">
-            <div className="font-medium">תזכורות</div>
-            {alerts ? (
-              <div className="text-muted">
-                נבדק {when(alerts.checkedAt)} · {alerts.sent.length === 0 ? "לא היה מה לשלוח" : `נשלחו ${alerts.sent.length}`}
-              </div>
-            ) : (
-              <div className="text-muted">עדיין לא נבדקו.</div>
-            )}
-          </div>
-        </li>
-      </ul>
-      <Link href="/activity" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline">
-        <IconHistory className="size-4" />
-        ליומן הפעילות
+    <p className="text-[13px] leading-6 text-muted">
+      {parts.join(" · ")}
+      {" · "}
+      <Link href="/activity" className="text-accent hover:underline">
+        יומן פעילות
       </Link>
-    </section>
+    </p>
   );
 }

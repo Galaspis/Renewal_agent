@@ -1,18 +1,29 @@
 import Link from "next/link";
 import { occurrencesBetween } from "@/lib/calendar";
 import { formatISODate, todayISO } from "@/lib/dates";
-import { bytesLabel } from "@/lib/format";
 import { listRecentDocuments } from "@/lib/items";
 import { countPendingProposals } from "@/lib/proposals";
-import { IconBack, IconDocument, IconInbox } from "./Icons";
-import { StatusCard } from "./StatusStrip";
+import { IconDocument, IconInbox } from "./Icons";
 import { cardClass } from "./styles";
 
-// The left column of the approved layout (desktop only): this month at a glance,
-// the latest documents, the drafts waiting, and what the tool last did.
+// The side column (desktop): this month at a glance, drafts waiting, latest files.
+// Quiet by design: small headings, no decoration, nothing that competes with the list.
 
 const MONTHS = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
 const WEEKDAYS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
+
+function SideTitle({ children, href, linkLabel }: { children: string; href?: string; linkLabel?: string }) {
+  return (
+    <div className="flex items-baseline justify-between">
+      <h2 className="text-sm font-semibold text-navy">{children}</h2>
+      {href && linkLabel ? (
+        <Link href={href} className="text-[13px] text-accent hover:underline">
+          {linkLabel}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
 
 function MiniCalendar() {
   const now = new Date();
@@ -29,43 +40,34 @@ function MiniCalendar() {
   }
   const cells: (number | null)[] = [...Array<null>(first.getDay()).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
+  const monthHref = `/calendar?m=${year}-${String(month).padStart(2, "0")}`;
 
   return (
     <section className={`${cardClass} p-4`}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-navy">
-          {MONTHS[month - 1]} {year}
-        </h2>
-        <Link href="/calendar" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline">
-          ליומן המלא
-          <IconBack className="size-4 rotate-180" />
-        </Link>
-      </div>
-      <div className="mt-3 grid grid-cols-7 text-center text-[11px] font-medium text-muted">
+      <SideTitle href={monthHref} linkLabel="ליומן המלא">
+        {`${MONTHS[month - 1]} ${year}`}
+      </SideTitle>
+      <div className="mt-3 grid grid-cols-7 text-center text-[11px] text-muted">
         {WEEKDAYS.map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>
-      <div className="mt-1 grid grid-cols-7 gap-y-1 text-center text-sm">
+      <div className="mt-1 grid grid-cols-7 text-center text-[13px]">
         {cells.map((day, i) => {
           if (day == null) return <div key={`e${i}`} />;
           const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           const mark = marks.get(iso);
           const isToday = iso === today;
           return (
-            <Link
-              key={iso}
-              href={`/calendar?m=${year}-${String(month).padStart(2, "0")}`}
-              className="flex flex-col items-center gap-0.5 py-0.5"
-            >
+            <Link key={iso} href={monthHref} className="flex flex-col items-center py-0.5">
               <span
-                className={`flex size-8 items-center justify-center rounded-full tabular-nums ${
-                  isToday ? "bg-accent font-bold text-white" : "text-foreground hover:bg-accent-soft"
+                className={`flex size-7 items-center justify-center rounded-full tabular-nums ${
+                  isToday ? "bg-accent font-semibold text-white" : "text-navy hover:bg-accent-soft"
                 }`}
               >
                 {day}
               </span>
-              <span className={`size-1.5 rounded-full ${mark === "past" ? "bg-danger" : mark === "due" ? "bg-primary" : "bg-transparent"}`} />
+              <span className={`mt-0.5 size-1 rounded-full ${mark === "past" ? "bg-danger" : mark === "due" ? "bg-accent" : "bg-transparent"}`} />
             </Link>
           );
         })}
@@ -75,31 +77,25 @@ function MiniCalendar() {
 }
 
 function RecentDocuments() {
-  const docs = listRecentDocuments(4);
+  const docs = listRecentDocuments(3);
   return (
     <section className={`${cardClass} p-4`}>
-      <h2 className="text-base font-bold text-navy">מסמכים אחרונים</h2>
+      <SideTitle>מסמכים אחרונים</SideTitle>
       {docs.length === 0 ? (
-        <p className="mt-2 text-sm text-muted">עדיין אין קבצים. פוליסה שמועברת במייל נשמרת כאן לבד.</p>
+        <p className="mt-2 text-sm text-muted">עדיין אין קבצים.</p>
       ) : (
-        <ul className="mt-3 divide-y divide-line">
+        <ul className="mt-2">
           {docs.map((doc) => (
-            <li key={doc.id} className="flex items-center gap-3 py-2.5">
-              <span
-                className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
-                  /pdf/i.test(doc.mime) ? "bg-primary-soft text-primary" : "bg-accent-soft text-accent"
-                }`}
-              >
-                <IconDocument className="size-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <a href={`/api/documents/${doc.id}`} className="block truncate text-sm font-semibold hover:text-accent">
+            <li key={doc.id} className="flex items-center gap-3 py-2">
+              <IconDocument className="size-5 shrink-0 text-accent" />
+              <span className="min-w-0 flex-1">
+                <a href={`/api/documents/${doc.id}`} className="block truncate text-sm font-medium text-navy hover:text-accent">
                   {doc.original_name}
                 </a>
-                <Link href={`/items/${doc.item_id}`} className="block truncate text-xs text-muted hover:text-accent">
-                  {doc.item_name} · {bytesLabel(doc.size_bytes)}
+                <Link href={`/items/${doc.item_id}`} className="block truncate text-[13px] text-muted hover:text-accent">
+                  {doc.item_name}
                 </Link>
-              </div>
+              </span>
             </li>
           ))}
         </ul>
@@ -110,35 +106,25 @@ function RecentDocuments() {
 
 export function DraftsCard() {
   const n = countPendingProposals();
+  if (n === 0) return null;
   return (
-    <Link
-      href="/inbox"
-      className={`${cardClass} flex items-center gap-3 p-4 transition-colors hover:border-accent ${n > 0 ? "border-s-4 border-s-primary" : ""}`}
-    >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
-        <IconInbox className="size-5" />
+    <Link href="/inbox" className={`${cardClass} flex items-center gap-3 p-4 transition-[box-shadow] hover:ring-accent/40`}>
+      <IconInbox className="size-5 shrink-0 text-accent" />
+      <span className="min-w-0 flex-1 text-sm">
+        <span className="font-semibold text-navy">{n === 1 ? "טיוטה אחת" : `${n} טיוטות`}</span>
+        <span className="text-muted"> מחכות להחלטה</span>
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-base font-bold text-navy">טיוטות מיילים</span>
-        <span className="block text-sm text-muted">
-          {n === 0 ? "אין טיוטות ממתינות" : n === 1 ? "טיוטה אחת מחכה להחלטה" : `${n} טיוטות מחכות להחלטה`}
-        </span>
-      </span>
-      {n > 0 ? (
-        <span className="inline-flex min-w-7 items-center justify-center rounded-full bg-danger px-2 text-sm font-bold leading-7 text-white">{n}</span>
-      ) : null}
-      <IconBack className="size-5 rotate-180 text-muted" />
+      <span className="text-[13px] text-accent">לטיוטות</span>
     </Link>
   );
 }
 
 export function Sidebar() {
   return (
-    <aside className="space-y-4">
-      <MiniCalendar />
+    <aside className="space-y-3">
       <DraftsCard />
+      <MiniCalendar />
       <RecentDocuments />
-      <StatusCard />
     </aside>
   );
 }

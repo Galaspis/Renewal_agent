@@ -14,7 +14,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Nav pendingDrafts={pendingDrafts} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 md:pb-16 md:pt-8">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-8 md:px-6 md:pb-20 md:pt-10">{children}</main>
     </>
   );
 }
