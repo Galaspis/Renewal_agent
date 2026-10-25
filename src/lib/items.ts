@@ -293,3 +293,15 @@ export function deleteDocumentRecord(id: string) {
   run("DELETE FROM documents WHERE id = ?", [id]);
 }
 
+
+export type RecentDocument = DocumentRow & { item_name: string };
+
+/** The newest uploaded files across all items, for the dashboard sidebar. */
+export function listRecentDocuments(limit = 4): RecentDocument[] {
+  return queryAll<RecentDocument>(
+    `SELECT d.*, i.name AS item_name
+     FROM documents d JOIN items i ON i.id = d.item_id
+     ORDER BY d.created_at DESC LIMIT ?`,
+    [limit],
+  );
+}

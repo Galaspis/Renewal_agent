@@ -52,20 +52,20 @@ export function Nav({ pendingDrafts = 0 }: { pendingDrafts?: number }) {
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-line bg-card">
-        <div className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 md:h-[72px]">
-          <Link href="/" className="flex items-center justify-self-start" aria-label="כָּרבוֹל, דף הבית">
+        <div className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 md:h-20 md:gap-6">
+          <Link href="/" className="flex min-w-0 items-center justify-self-start" aria-label="כָּרבוֹל, דף הבית">
             {/* The horizontal logo is the unit: rooster + wordmark with its vowel marks. Never retyped. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.svg" alt="כָּרבוֹל" className="h-10 w-auto md:h-12" />
+            <img src="/brand/logo.svg" alt="כָּרבוֹל" className="h-11 w-auto md:h-14" />
           </Link>
-          <nav className="hidden h-full items-stretch justify-center gap-7 md:flex">
+          <nav className="hidden h-full items-stretch justify-center gap-6 md:flex lg:gap-8">
             {links.map((link) => {
               const active = isActive(link.href, pathname);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 border-b-[3px] px-0.5 text-[15px] ${
+                  className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-0.5 text-[15px] ${
                     active
                       ? "border-accent font-bold text-accent"
                       : "border-transparent font-medium text-navy/80 hover:text-accent"

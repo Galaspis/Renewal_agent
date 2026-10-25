@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:preview": "set FAMILY_PASSWORD=changeme&& set HUB_AUTH=0&& next dev -p 3010"
   },
   "dependencies": {
     "jose": "^6.2.10",

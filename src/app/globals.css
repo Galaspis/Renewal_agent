@@ -47,6 +47,24 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   line-height: 1.5;
+  overflow-x: clip; /* a long name must never make the phone scroll sideways */
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+}
+
+/* Section titles on the dashboard and list pages: "דורש טיפול (1)". */
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+.section-title .count {
+  font-weight: 600;
+  color: var(--muted);
 }
 
 a {

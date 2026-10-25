@@ -4,13 +4,14 @@ import { requireSession } from "@/lib/auth";
 import { getSetting } from "@/lib/db";
 import { daysUntil, displayDate } from "@/lib/dates";
 import { listActiveItems, rollForwardAutoRenewals } from "@/lib/items";
-import { countPendingProposals } from "@/lib/proposals";
 import type { RenewalItem } from "@/lib/types";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { ItemCard } from "@/components/ItemCard";
-import { StatusStrip } from "@/components/StatusStrip";
-import { btnSecondary, cardClass } from "@/components/styles";
+import { DraftsCard, Sidebar } from "@/components/Sidebar";
+import { StatusCard, StatusProblems } from "@/components/StatusStrip";
+import { countPendingProposals } from "@/lib/proposals";
+import { btnSecondary } from "@/components/styles";
 
 export const dynamic = "force-dynamic";
 
@@ -18,16 +19,11 @@ export const dynamic = "force-dynamic";
 function SummaryBand({ items, attention, overdue }: { items: RenewalItem[]; attention: number; overdue: number }) {
   const soon = items.filter((item) => {
     const d = daysUntil(item.renewal_date);
-    return d >= 0 && d <= 30;
+    return d >= 0 && d <= 30 && !item.attention;
   }).length;
   const needs = attention + overdue;
-  const parts = [
-    needs > 0 ? `${needs} דורש טיפול` : null,
-    soon > 0 ? `${soon} בקרוב` : null,
-  ].filter(Boolean);
-  const nearest = [...items]
-    .sort((a, b) => a.renewal_date.localeCompare(b.renewal_date))
-    .slice(0, 3);
+  const parts = [needs > 0 ? `${needs} דורש טיפול` : null, soon > 0 ? `${soon} בקרוב` : null].filter(Boolean);
+  const nearest = [...items].sort((a, b) => a.renewal_date.localeCompare(b.renewal_date)).slice(0, 3);
 
   const dot = (item: RenewalItem) => {
     const d = daysUntil(item.renewal_date);
@@ -44,21 +40,21 @@ function SummaryBand({ items, attention, overdue }: { items: RenewalItem[]; atte
   };
 
   return (
-    <section className="mt-5 rounded-2xl bg-accent px-5 py-5 text-white sm:px-7 sm:py-6">
-      <div className="flex flex-wrap items-start justify-between gap-6">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">החידושים שלך</h1>
-          <p className="mt-1 text-sm text-white/85 sm:text-base">
+    <section className="bg-accent text-white">
+      <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-7 sm:py-9 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="min-w-0">
+          <h1 className="text-[28px] font-extrabold leading-tight sm:text-4xl">החידושים שלך</h1>
+          <p className="mt-1.5 text-base text-white/85 sm:text-lg">
             {parts.length > 0 ? parts.join(" · ") : "הכל במעקב, אין מה לטפל בו עכשיו."}
           </p>
         </div>
         {nearest.length > 0 ? (
-          <ul className="grid gap-1.5 text-sm sm:border-s sm:border-white/30 sm:ps-6">
+          <ul className="grid min-w-0 gap-2 text-[15px] lg:border-s lg:border-white/30 lg:ps-8">
             {nearest.map((item) => (
-              <li key={item.id} className="flex items-center gap-3">
-                <span className={`size-3 shrink-0 rounded-full ${dot(item)}`} />
-                <span className="w-24 text-white/85">{label(item)}</span>
-                <span className="numeric font-medium">{displayDate(item.renewal_date)}</span>
+              <li key={item.id} className="grid min-w-0 grid-cols-[12px_auto_auto_minmax(0,1fr)] items-center gap-x-3">
+                <span className={`size-3 rounded-full ${dot(item)}`} />
+                <span className="whitespace-nowrap text-white/85">{label(item)}</span>
+                <span className="numeric whitespace-nowrap font-semibold">{displayDate(item.renewal_date)}</span>
                 <Link href={`/items/${item.id}`} className="truncate text-white/85 hover:text-white hover:underline">
                   {item.name}
                 </Link>
@@ -79,7 +75,7 @@ function GroupList({ items }: { items: RenewalItem[] }) {
         <div key={item.id}>
           <ItemCard item={item} />
           {daysUntil(item.renewal_date) < 0 ? (
-            <div className="mt-2 flex flex-wrap items-center gap-2 px-2 text-xs text-muted">
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-2 text-sm text-muted">
               <span>באיחור. אם ביטלתם את המנוי:</span>
               <form action={setItemEnded.bind(null, item.id)}>
                 <button type="submit" className={btnSecondary}>
@@ -131,52 +127,54 @@ export default async function DashboardPage() {
   ].filter((group) => group.items.length > 0);
 
   return (
-    <div>
-      <SummaryBand items={items} attention={attention.length} overdue={overdue.length} />
+    <>
+      {/* The band spans the page; the layout's padding is undone for it and restored below. */}
+      <div className="-mx-4 -mt-6 md:-mt-8">
+        <SummaryBand items={items} attention={attention.length} overdue={overdue.length} />
+      </div>
 
-      <StatusStrip />
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
+        <div className="min-w-0 space-y-6">
+          <StatusProblems />
+          {pendingDrafts > 0 ? (
+            <div className="lg:hidden">
+              <DraftsCard />
+            </div>
+          ) : null}
 
-      {pendingDrafts > 0 ? (
-        <Link
-          href="/inbox"
-          className={`${cardClass} mt-3 flex items-center justify-between border-s-4 border-s-primary px-5 py-4 text-sm hover:border-accent`}
-        >
-          <span>
-            <span className="me-2 inline-flex min-w-6 items-center justify-center rounded-full bg-danger px-2 text-xs font-bold leading-6 text-white">
-              {pendingDrafts}
-            </span>
-            {pendingDrafts === 1 ? "טיוטה אחת ממתינה להחלטה" : "טיוטות ממתינות להחלטה"}
-          </span>
-          <span className="font-bold text-accent">לפתיחה</span>
-        </Link>
-      ) : null}
-
-      {items.length === 0 ? (
-        <EmptyState
-          title="עוד אין חידושים"
-          body="הוסיפו ידנית, או העבירו מייל (פוליסה, חשבונית, הודעת חידוש) לכתובת שמופיעה בהגדרות."
-          actionHref="/items/new"
-          actionLabel="הוספת חידוש"
-        />
-      ) : groups.length === 0 ? (
-        <EmptyState
-          title="הכל שקט ל־90 יום"
-          body="אין חידושים בטווח הקרוב. השאר מופיע במסך ״כל החידושים״."
-          actionHref="/items"
-          actionLabel="לכל החידושים"
-        />
-      ) : (
-        <div className="mt-8 space-y-7">
-          {groups.map((group) => (
-            <section key={group.title}>
-              <h2 className="mb-3 text-base font-bold text-navy">
-                {group.title} <span className="text-muted">({group.items.length})</span>
-              </h2>
-              <GroupList items={group.items} />
-            </section>
-          ))}
+          {items.length === 0 ? (
+            <EmptyState
+              title="עוד אין חידושים"
+              body="הוסיפו ידנית, או העבירו מייל (פוליסה, חשבונית, הודעת חידוש) לכתובת שמופיעה בהגדרות."
+              actionHref="/items/new"
+              actionLabel="הוספת חידוש"
+            />
+          ) : groups.length === 0 ? (
+            <EmptyState
+              title="הכל שקט ל־90 יום"
+              body="אין חידושים בטווח הקרוב. השאר מופיע במסך ״כל החידושים״."
+              actionHref="/items"
+              actionLabel="לכל החידושים"
+            />
+          ) : (
+            groups.map((group) => (
+              <section key={group.title}>
+                <h2 className="section-title mb-3">
+                  {group.title} <span className="count">({group.items.length})</span>
+                </h2>
+                <GroupList items={group.items} />
+              </section>
+            ))
+          )}
         </div>
-      )}
-    </div>
+
+        <div className="hidden lg:block">
+          <Sidebar />
+        </div>
+        <div className="lg:hidden">
+          <StatusCard />
+        </div>
+      </div>
+    </>
   );
 }

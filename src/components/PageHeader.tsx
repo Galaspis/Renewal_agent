@@ -4,18 +4,24 @@ export function PageHeader({
   title,
   description,
   icon,
+  action,
 }: {
   title: string;
   description?: string;
   icon?: ReactNode;
+  /** Buttons or links shown at the end of the header row. */
+  action?: ReactNode;
 }) {
   return (
-    <div>
-      <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-        {icon}
-        {title}
-      </h1>
-      {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 className="flex items-center gap-2 text-[28px] font-extrabold leading-tight text-navy sm:text-3xl">
+          {icon}
+          {title}
+        </h1>
+        {description ? <p className="mt-1.5 text-[15px] text-muted">{description}</p> : null}
+      </div>
+      {action ? <div className="flex flex-wrap gap-2">{action}</div> : null}
     </div>
   );
 }
