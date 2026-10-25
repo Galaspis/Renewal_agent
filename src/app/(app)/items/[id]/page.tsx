@@ -56,7 +56,6 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
       : CATEGORY_LABELS[item.category];
   const active = item.status === "active";
   const overdue = active && status.tone === "danger";
-  const needsYou = active && (item.attention === 1 || overdue);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -86,24 +85,23 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             {active ? (
               <>
                 <span className="mx-2 text-muted">·</span>
-                <span className={needsYou ? "font-semibold text-danger" : status.tone === "soon" ? "font-semibold text-accent" : "text-muted"}>
+                <span className={overdue ? "font-semibold text-danger" : status.tone === "soon" ? "font-semibold text-accent" : "text-muted"}>
                   {status.text}
                 </span>
-                {item.attention ? (
-                  <>
-                    <span className="mx-2 text-muted">·</span>
-                    <span className="font-semibold text-danger">דורש טיפול</span>
-                    <span className="mx-2 text-muted">·</span>
-                    <form action={clearAttention.bind(null, item.id)} className="inline">
-                      <button type="submit" className={quietLink}>
-                        הסר סימון
-                      </button>
-                    </form>
-                  </>
-                ) : null}
               </>
             ) : null}
           </p>
+          {item.attention ? (
+            <p className="mt-1.5 text-sm">
+              <span className="font-semibold text-danger">מסומן ״דורש טיפול״</span>
+              <span className="mx-2 text-muted">·</span>
+              <form action={clearAttention.bind(null, item.id)} className="inline">
+                <button type="submit" className={quietLink}>
+                  הסר סימון
+                </button>
+              </form>
+            </p>
+          ) : null}
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
             {active ? (
               <form action={markRenewed.bind(null, item.id)}>

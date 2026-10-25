@@ -37,52 +37,48 @@
   --font-sans: var(--font-heebo);
 }
 
-html {
-  height: 100%;
+/* Element defaults live in the base layer, so Tailwind utilities (which sit in the
+   utilities layer) always win over them. An unlayered "a { color: inherit }" would beat
+   "text-white" on every link. */
+@layer base {
+  html {
+    height: 100%;
+  }
+
+  body {
+    min-height: 100%;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-x: clip; /* a long name must never make the phone scroll sideways */
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  input[type="date"],
+  input[type="number"] {
+    color-scheme: light;
+  }
 }
 
-body {
-  min-height: 100%;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  line-height: 1.5;
-  overflow-x: clip; /* a long name must never make the phone scroll sideways */
-}
-
-h1,
-h2,
-h3 {
-  letter-spacing: -0.01em;
-}
-
-/* Section titles on the dashboard and list pages: "דורש טיפול (1)". */
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 800;
-  color: var(--navy);
-}
-.section-title .count {
-  font-weight: 600;
-  color: var(--muted);
-}
-
-a {
-  color: inherit;
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-input[type="date"],
-input[type="number"] {
-  color-scheme: light;
-}
-
-/* Numbers and dates keep left-to-right order inside Hebrew text (brand guide: bidi isolate). */
-.numeric {
-  direction: ltr;
-  unicode-bidi: isolate;
+@layer components {
+  /* Numbers and dates keep left-to-right order inside Hebrew text (brand guide: bidi isolate). */
+  .numeric {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
 }

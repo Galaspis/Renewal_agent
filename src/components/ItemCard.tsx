@@ -56,9 +56,9 @@ export function ItemCard({ item }: { item: RenewalItem }) {
             ) : null}
           </span>
         </span>
-        {item.amount != null ? (
-          <span className="numeric hidden shrink-0 text-sm text-muted sm:block">{formatMoney(item.amount, item.currency)}</span>
-        ) : null}
+        <span className="numeric hidden w-28 shrink-0 text-start text-sm text-muted sm:block">
+          {item.amount != null ? formatMoney(item.amount, item.currency) : ""}
+        </span>
       </Link>
       {needsYou ? (
         <form action={markRenewed.bind(null, item.id)} className="basis-full px-4 pb-4 sm:basis-auto sm:shrink-0 sm:p-0 sm:pe-5">
